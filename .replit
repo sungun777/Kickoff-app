@@ -1,10 +1,18 @@
 modules = ["nodejs-20"]
 
 [workflows]
-runButton = "Run"
+runButton = "React Dev Server"
 
 [[workflows.workflow]]
 name = "Run"
+author = 39888440
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd kickoff && npm start"
+
+[[workflows.workflow]]
+name = "React Dev Server"
 author = 39888440
 
 [[workflows.workflow.tasks]]
