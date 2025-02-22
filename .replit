@@ -9,8 +9,11 @@ author = 39888440
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd kickoff && npm start"
+args = "cd kickoff && PORT=3000 HOST=0.0.0.0 npm start"
 
 [[ports]]
 localPort = 3001
 externalPort = 80
+
+[deployment]
+run = ["sh", "-c", "cd kickoff && PORT=3000 HOST=0.0.0.0 npm start"]
