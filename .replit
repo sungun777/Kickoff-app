@@ -21,3 +21,6 @@ externalPort = 80
 
 [deployment]
 run = ["sh", "-c", "cd kickoff && PORT=3000 HOST=0.0.0.0 npm start"]
+
+[nix]
+channel = "stable-24_05"
