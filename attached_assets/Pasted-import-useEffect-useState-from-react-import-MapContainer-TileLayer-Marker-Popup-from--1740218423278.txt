@@ -1,0 +1,68 @@
+import { useEffect, useState } from "react";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import { db, collection, addDoc, getDocs, updateDoc, doc } from "./firebase";
+import { FiCheckCircle, FiPlusCircle } from "react-icons/fi";
+
+export default function KickoffApp() {
+  const [games, setGames] = useState([]);
+  const [newGame, setNewGame] = useState({ title: "", time: "", location: [40.7306, -73.9352], approved: false });
+
+  useEffect(() => {
+    const fetchGames = async () => {
+      const querySnapshot = await getDocs(collection(db, "games"));
+      setGames(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    };
+    fetchGames();
+  }, []);
+
+  const addGame = async () => {
+    const docRef = await addDoc(collection(db, "games"), newGame);
+    setGames([...games, { id: docRef.id, ...newGame }]);
+    setNewGame({ title: "", time: "", location: [40.7306, -73.9352], approved: false });
+  };
+
+  const approveGame = async (id) => {
+    const gameRef = doc(db, "games", id);
+    await updateDoc(gameRef, { approved: true });
+    setGames(games.map(game => game.id === id ? { ...game, approved: true } : game));
+  };
+
+  return (
+    <div className="p-6 text-center bg-gray-100 min-h-screen">
+      {/* Header */}
+      <h1 className="text-4xl font-bold mb-6 text-blue-600">⚽ Kickoff FC</h1>
+
+      {/* Map Section */}
+      <MapContainer center={[40.7128, -74.006]} zoom={13} className="h-80 w-full rounded-lg shadow-lg">
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        {games.filter(game => game.approved).map((game) => (
+          <Marker key={game.id} position={game.location}>
+            <Popup className="text-lg font-semibold">{game.title} - {game.time}</Popup>
+          </Marker>
+        ))}
+      </MapContainer>
+
+      {/* Admin Panel - Add Game */}
+      <div className="mt-6 bg-white p-4 rounded-lg shadow-md">
+        <h2 className="text-xl font-semibold">Admin Panel: Add Game</h2>
+        <input type="text" placeholder="Game Title" value={newGame.title} onChange={(e) => setNewGame(prev => ({ ...prev, title: e.target.value }))} className="border p-2 m-2 rounded-lg w-full" />
+        <input type="text" placeholder="Time" value={newGame.time} onChange={(e) => setNewGame(prev => ({ ...prev, time: e.target.value }))} className="border p-2 m-2 rounded-lg w-full" />
+        <button onClick={addGame} className="bg-blue-500 text-white p-2 rounded-lg flex items-center justify-center w-full">
+          <FiPlusCircle className="mr-2" /> Add Game
+        </button>
+      </div>
+
+      {/* Pending Game Approvals */}
+      <h2 className="text-lg font-bold mt-6">Pending Approvals</h2>
+      {games.filter(game => !game.approved).map(game => (
+        <div key={game.id} className="mt-2 p-4 border bg-white rounded-lg flex justify-between items-center shadow-md">
+          <p className="text-lg">{game.title} - {game.time}</p>
+          <button onClick={() => approveGame(game.id)} className="bg-green-500 text-white p-2 rounded-lg flex items-center">
+            <FiCheckCircle className="mr-2" /> Approve
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
