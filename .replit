@@ -1,1 +1,16 @@
 modules = ["nodejs-20"]
+
+[workflows]
+runButton = "Run"
+
+[[workflows.workflow]]
+name = "Run"
+author = 39888440
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd kickoff && npm start"
+
+[[ports]]
+localPort = 3001
+externalPort = 80
